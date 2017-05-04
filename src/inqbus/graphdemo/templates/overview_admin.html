@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}
+  Overview
+{% endblock %}
+{% block heading %}
+  Overview
+{% endblock %}
+{% block page_content %}
+  <a href="{{ add_url }}">Add File</a>
+  <ul>
+  {% for file in files %}
+    <li>
+      {{ file.file }} <a href="{{ file.delete_url }}">Delete File</a>
+    </li>
+  {% endfor %}
+  </ul>
+{% endblock %}

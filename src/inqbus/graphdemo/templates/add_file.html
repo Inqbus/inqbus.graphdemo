@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}
+  Add Files
+{% endblock %}
+{% block heading %}
+  Add Files
+{% endblock %}
+{% block page_content %}
+  <form method=post enctype=multipart/form-data>
+      <p><input type=file name=file>
+         <input type=submit value=Upload>
+  </form>
+
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Diagram View
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+  <link
+    href="{{ url_for('static', filename='css/bokeh.min.css') }}"
+    rel="stylesheet" type="text/css">
+  <link
+    href="{{ url_for('static', filename='css/bokeh-widgets.min.css') }}"
+    rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+{% if debug %}
+  <script src="{{ url_for('static', filename='js/bokeh.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bokeh-widgets.js') }}"></script>
+{% else %}
+  <script src="{{ url_for('static', filename='js/bokeh.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bokeh-widgets.min.js') }}"></script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/jquery.binarytransport.js') }}"></script>
+<script src="{{ url_for('static', filename='js/underscore.min.js') }}"></script>
+{{ chart.script|safe }}
+{% endblock %}
+
+{%block heading %}Diagram View for {{ file }}{% endblock %}
+
+{% block page_content %}
+  {{ chart.div|safe }}
+{% endblock %}

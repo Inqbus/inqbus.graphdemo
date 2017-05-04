@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}
+  Overview
+{% endblock %}
+{% block heading %}
+  Overview
+{% endblock %}
+{% block page_content %}
+  <ul>
+  {% for file in files %}
+    <li>
+      {{ file.file }}
+    </li>
+  {% endfor %}
+  </ul>
+{% endblock %}

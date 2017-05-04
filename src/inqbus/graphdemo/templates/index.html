@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}
+  Index Page
+{% endblock %}
+{% block heading %}
+  Index Page
+{% endblock %}
+
+{% block page_content %}
+  <ul>
+  {% for link in links %}
+    <li>
+      <a href="{{ link.path }}">{{ link.title }}</a>
+    </li>
+  {% endfor %}
+  </ul>
+{% endblock %}

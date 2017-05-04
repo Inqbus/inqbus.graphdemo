@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Bokeh Server Diagram View
+{% endblock %}
+
+{%block heading %}Diagram View using Bokeh Server {% endblock %}
+
+{% block page_content %}
+  <div class="bokeh_app">
+      {{ bokeh_script|safe }}
+    </div>
+{% endblock %}
