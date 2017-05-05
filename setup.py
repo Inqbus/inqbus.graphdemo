@@ -62,7 +62,8 @@ setup(name='inqbus.graphdemo',
           'pandas',
           'flask-menu',
           'flask-bootstrap',
-          'scipy'
+          'scipy',
+          'dask'
           # 'Flask-ACL',
       ],
       entry_points="""
