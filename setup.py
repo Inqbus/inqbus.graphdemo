@@ -63,7 +63,8 @@ setup(name='inqbus.graphdemo',
           'flask-menu',
           'flask-bootstrap',
           'scipy',
-          'dask'
+          'dask',
+          'cytoolz'
           # 'Flask-ACL',
       ],
       entry_points="""
