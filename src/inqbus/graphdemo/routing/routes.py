@@ -55,9 +55,9 @@ def logged_in_views(app):
     # @login_required
     @register_menu(app, '.overview', 'File overview', order=2)
     def overview():
-        if current_user.has_role('admin'):
-            return overview_view_admin(app)
-        return overview_view(app)
+        # if current_user.has_role('admin'):
+        #     return overview_view_admin(app)
+        return overview_view_admin(app)
 
     @app.route('/diagramview/<path:filename>')
     # @login_required
