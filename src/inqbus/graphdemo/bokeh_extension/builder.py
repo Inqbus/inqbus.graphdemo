@@ -47,6 +47,8 @@ def build_xy_plot_python():
     return layout.render_components()
 
 
+
+
 def build_contour_plot(upload_path=UPLOAD_PATH):
     """
     Prepare a plot using the ContourPlotLayout and hdf5-files located in
@@ -56,10 +58,15 @@ def build_contour_plot(upload_path=UPLOAD_PATH):
 
     :param upload_path: path where to find files
     """
-    data = get_data(upload_path)
+    data, x_min, x_max, y_min, y_max = get_data(upload_path)
 
     layout = ContourPlotLayout(
-        data=data
+        data=data,
+        x_min=x_min,
+        x_max=x_max,
+        y_min=y_min,
+        y_max=y_max
+
     )
 
     return layout.render_components()

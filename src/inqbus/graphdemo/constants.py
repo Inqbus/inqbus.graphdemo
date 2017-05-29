@@ -16,6 +16,10 @@ SPECIAL_TABLES_ENTRY = "inqbus.graphdemo.tables"
 UPLOAD_PATH = 'uploads/'
 TABLE_URL_KEY = 'table'
 
+# Contour Data set
+#CONTOUR_DATA_SET ='/data/vms/ina/data/08/20150801_leipzig_CHM080079_000.h5'
+CONTOUR_DATA_SET ='/home/volker/workspace/graph4/out.hdf5'
+
 # Enable WebGL
 WEBGL = True
 

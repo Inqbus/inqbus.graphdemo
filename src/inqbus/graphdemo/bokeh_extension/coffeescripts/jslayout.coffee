@@ -175,6 +175,11 @@ export class ContourPlotLayoutView extends BaseJSView
 
           @read_attributes(data_from_server.slice(meta_data_end), json)
 
+          @model.plot.renderers[5].glyph.x = @model.attributes.x_min
+          @model.plot.renderers[5].glyph.y = @model.attributes.y_min
+          @model.plot.renderers[5].glyph.dw = @model.attributes.x_max - @model.attributes.x_min
+          @model.plot.renderers[5].glyph.dh = @model.attributes.y_max - @model.attributes.y_min
+
           @model.data.trigger 'change'
           return
         ,this)
@@ -209,9 +214,14 @@ export class ContourPlotLayout extends LayoutDOM
   # p.String in the JS implementation. Where the JS type system is not yet
   # as rich, you can use p.Any as a "wildcard" property type.
   @define {
-    plot: [ p.Any    ]
+    plot: [p.Any]
 
     data: [p.Any]
+
+    x_min: [p.Any]
+    x_max: [p.Any]
+    y_min: [p.Any]
+    y_max: [p.Any]
 
     color_mapper: [p.Any]
 

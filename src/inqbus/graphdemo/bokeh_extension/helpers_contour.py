@@ -5,7 +5,7 @@ import dask.array as da
 import numpy as np
 import scipy.ndimage as sc
 import tables as tb
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, Float
 from inqbus.graphdemo.bokeh_extension.helpers import \
     binary_from_data_map
 from inqbus.graphdemo.constants import (
@@ -14,7 +14,7 @@ from inqbus.graphdemo.constants import (
     Y_MAX_CONTOUR,
     Y_MIN_CONTOUR,
     X_MIN_CONTOUR,
-    MAX_POINTS_CORRECTION)
+    MAX_POINTS_CORRECTION, CONTOUR_DATA_SET)
 
 
 def maxpoints_filter_matrix(matrix, numpoints_x, numpoints_y):
@@ -65,6 +65,15 @@ def range_filter(data, xmin, xmax, ymin, ymax):
 
     return data
 
+def clip(data, x_bin_min, x_bin_max, y_bin_min, y_bin_max):
+    """
+    Remove points which are not displayed in the given range
+    """
+
+    data = data[x_bin_min:x_bin_max, y_bin_min:y_bin_max]
+
+    return data
+
 
 def get_file_data(path,
                   plot_width=None,
@@ -73,9 +82,11 @@ def get_file_data(path,
                   x_max=None,
                   y_min=None,
                   y_max=None):
-    filenames = sorted(glob(os.path.join(path,
-                                         '08',
-                                         '2015*_leipzig_CHM080079_000.h5')))
+    filenames = sorted(glob(CONTOUR_DATA_SET))
+
+#        os.path.join(path,
+#                                         '08',
+#                                         '2015*_leipzig_CHM080079_000.h5')))
 
     if not filenames:
         n = 500
@@ -105,13 +116,39 @@ def get_file_data(path,
 
         time_da_arrays = [da.from_array(time, chunks=100) for time in times]
         time_concat = da.concatenate(time_da_arrays, axis=0)
-        x = np.array(time_concat)
+        x = time_concat
         y = np.array(height)
-        z = np.array(beta_raw_concat)
+        z = beta_raw_concat
 
-    x_min, x_max, y_min, y_max = clear_ranges(x_min, x_max, y_min, y_max)
+#    x_min, x_max, y_min, y_max = clear_ranges(x_min, x_max, y_min, y_max)
+    x0= x[0].compute()
+    xN= x[-1].compute()
 
-    z = range_filter(z, x_min, x_max, y_min, y_max)
+    if not x_min:
+        x_min = x0
+        x_bin_min = 0
+    else:
+        x_bin_min = int(x.shape[0]*(x0-x_min)/(x0-xN))
+    if not x_max:
+        x_max = xN
+        x_bin_max = x.shape[0]-1
+    else:
+        x_bin_max = int(x.shape[0]*(x0-x_max)/(x0-xN))
+    if not y_min:
+        y_min = y[0]
+        y_bin_min = 0
+    else:
+        y_bin_min = int(y.shape[0]*(y[0]-y_min)/(y[0]-y[-1]))
+    if not y_max:
+        y_max = y[-1]
+        y_bin_max = y.shape[0]-1
+    else:
+        y_bin_max = int(y.shape[0]*(y[0]-y_max)/(y[0]-y[-1]))
+
+
+#    z = range_filter(z, x_min, x_max, y_min, y_max)
+    clipped = clip(z, x_bin_min, x_bin_max, y_bin_min, y_bin_max)
+
 
     if plot_height:
         plot_height = int(plot_height)
@@ -123,22 +160,30 @@ def get_file_data(path,
     else:
         plot_width = MAX_NUMBERS_DEFAULT
 
-    z = maxpoints_filter_matrix(z, plot_width, plot_height)
+    gridded = maxpoints_filter_matrix(clipped, plot_width, plot_height)
 
-    return x, y, z.astype('float64')
+    return x.compute(), y, gridded.astype('float64'), x_min, x_max, y_min, y_max
 
+class ImageColumnDataSource(ColumnDataSource):
+    """  """
+
+    X0 = Float()
+    Y0 = Float()
+    DX = Float()
+    DY = Float()
 
 def get_data(path):
     """Just return hard coded data in directory 08 or render default
     example of bokeh-doku"""
 
-    x, y, z = get_file_data(path)
+    x, y, z, x_min, x_max, y_min, y_max  = get_file_data(path)
 
     data = ColumnDataSource(data=dict(
         image=[z],
+
     ))
 
-    return data
+    return data, x_min, x_max, y_min, y_max
 
 
 def clear_ranges(x_min, x_max, y_min, y_max):
@@ -168,16 +213,15 @@ def clear_ranges(x_min, x_max, y_min, y_max):
 
     return x_min, x_max, y_min, y_max
 
-
 def get_contour_data_binary(path, plot_width=None,
                             plot_height=None,
                             x_min=None,
                             x_max=None,
                             y_min=None,
                             y_max=None):
-    x_min, x_max, y_min, y_max = clear_ranges(x_min, x_max, y_min, y_max)
+#    x_min, x_max, y_min, y_max = clear_ranges(x_min, x_max, y_min, y_max)
 
-    x, y, z = get_file_data(path,
+    x, y, z, x_min, x_max, y_min, y_max = get_file_data(path,
                             plot_width=plot_width,
                             plot_height=plot_height,
                             x_min=x_min,
@@ -189,10 +233,14 @@ def get_contour_data_binary(path, plot_width=None,
 
     data_map = {
         'data.data.image': [z],
-        'data.data.x': [x_min],
-        'data.data.y': [y_min],
-        'data.data.dw': [x_max - x_min],
-        'data.data.dh': [y_max - y_min],
+        'attributes.x_min': x_min,
+        'attributes.x_max': x_max,
+        'attributes.y_min': y_min,
+        'attributes.y_max': y_max,
+#        'data.data.x': [x_min],
+#        'data.data.y': [y_min],
+#        'data.data.dw': [x_max - x_min],
+#        'data.data.dh': [y_max - y_min],
         'data._shapes.image': [shape],
     }
 

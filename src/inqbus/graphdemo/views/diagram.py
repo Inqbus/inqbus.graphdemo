@@ -46,6 +46,32 @@ def diagram_plot_data_view(app, upload_path, filename, table_path, **kwargs):
 
     return resp
 
+def validate_range(kwargs):
+    x_min_str = kwargs['x_min']
+    x_max_str = kwargs['x_max']
+    y_min_str = kwargs['y_min']
+    y_max_str = kwargs['y_max']
+    if not x_min_str:
+        x_min = None
+    else:
+        x_min = float(x_min_str)
+    if not x_max_str:
+        x_max = None
+    else:
+        x_max = float(x_max_str)
+    if not y_min_str:
+        y_min = None
+    else:
+        y_min = float(y_min_str)
+    if not y_max_str:
+        y_max = None
+    else:
+        y_max = float(y_max_str)
+    return x_min, x_max, y_min, y_max
+
+def validate_resolution(kwargs):
+    return int(kwargs['plot_width']), int(kwargs['plot_height'])
+
 
 def diagram_contour_data_view(app, upload_path, **kwargs):
 
@@ -54,7 +80,10 @@ def diagram_contour_data_view(app, upload_path, **kwargs):
                      kwargs)
                     )
 
-    binary_data = get_contour_data_binary(upload_path, **kwargs)
+    x_min, x_max, y_min, y_max = validate_range(kwargs)
+    plot_width, plot_height = validate_resolution(kwargs)
+
+    binary_data = get_contour_data_binary(upload_path, plot_width, plot_height, x_min, x_max, y_min, y_max )
 
     resp = Response(binary_data, mimetype='application/octet-stream')
 

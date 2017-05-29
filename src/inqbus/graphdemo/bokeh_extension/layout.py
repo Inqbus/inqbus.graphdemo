@@ -4,7 +4,7 @@ from bokeh.layouts import column, row
 from bokeh.models import LayoutDOM, Select, Plot, \
     ColumnDataSource, DataTable, \
     TableColumn, Range1d, ColorBar, BasicTicker, \
-    LinearColorMapper
+    LinearColorMapper, Float, Image
 from bokeh.palettes import RdYlGn11
 from bokeh.plotting import figure
 from bokeh.resources import INLINE
@@ -359,8 +359,12 @@ class ContourPlotLayout(LayoutDOM):
     __javascript__ = "http://underscorejs.org/underscore-min.js"
 
     plot = Instance(Plot)
-
     data = Instance(ColumnDataSource)
+
+    x_min = Float()
+    x_max = Float()
+    y_min = Float()
+    y_max = Float()
 
     color_mapper = Instance(LinearColorMapper)
 
@@ -385,17 +389,49 @@ class ContourPlotLayout(LayoutDOM):
         self.color_mapper = LinearColorMapper(
             palette=RdYlGn11, low=min_data, high=max_data)
 
+        if 'x_min' in data:
+            x_min = data['x_min']
+        else:
+            x_min = self.x_min
+        if 'x_max' in data:
+            x_max = data['x_max']
+        else:
+            x_max = self.x_max
+        if 'y_min' in data:
+            y_min = data['y_min']
+        else:
+            y_min = self.y_min
+        if 'y_max' in data:
+            y_max = data['y_max']
+        else:
+            y_max = self.y_max
+
+#        self.data.X0 = x_min
+#        self.data.Y0 = y_min
+#        self.data.DX= x_max-x_min
+#        self.data.DY= y_max-y_min
+
         self.plot = figure(plot_width=600,
                            plot_height=400,
-                           x_range=[X_MIN_CONTOUR, X_MAX_CONTOUR],
-                           y_range=[Y_MIN_CONTOUR, Y_MAX_CONTOUR],
+                           x_range= [x_min, x_max],
+                           y_range = [y_min, y_max],
+#                           x_range=[X_MIN_CONTOUR, X_MAX_CONTOUR],
+#                           y_range=[Y_MIN_CONTOUR, Y_MAX_CONTOUR],
                            min_border_right=10)
 
+#        self.plot.image(image='image',
+#                        x='X0',
+#                        y='Y0',
+#                        dw='DX',
+#                        dh='DY',
+#                        color_mapper=self.color_mapper,
+#                        source=self.data)
+
         self.plot.image(image='image',
-                        x=[X_MIN_CONTOUR],
-                        y=[Y_MIN_CONTOUR],
-                        dw=[X_MAX_CONTOUR - X_MIN_CONTOUR],
-                        dh=[Y_MAX_CONTOUR - Y_MIN_CONTOUR],
+                        x=x_min,
+                        y=y_min,
+                        dw=x_max-x_min,
+                        dh=y_max-y_min,
                         color_mapper=self.color_mapper,
                         source=self.data)
 
