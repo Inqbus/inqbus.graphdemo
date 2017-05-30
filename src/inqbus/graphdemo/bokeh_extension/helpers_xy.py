@@ -6,7 +6,7 @@ from inqbus.graphdemo.bokeh_extension.helpers import \
     binary_from_data_map, get_strides_avg_and_std, get_strides_avg, \
     get_max_value, get_min_value
 from inqbus.graphdemo.constants import MAX_NUMBERS_DEFAULT, \
-    REMOVE_DUPLICATES
+    REMOVE_DUPLICATES, X_AXIS_DATES
 from tables import open_file
 
 
@@ -76,6 +76,10 @@ def get_column_data(table,
         # no or wrong columns selected return empty default
         df = pd.DataFrame({'x': [], 'y': []})
         return df
+
+    # because bokeh clacluates on ms and unixtimestamp is on seconds
+    if X_AXIS_DATES:
+        df['x'] = df['x'] * 1000
 
     # filter values which ar not in given range if a rang is given
     if x_min and (x_min != 'NaN'):

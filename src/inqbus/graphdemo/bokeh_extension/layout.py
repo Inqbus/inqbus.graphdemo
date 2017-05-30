@@ -1,10 +1,10 @@
-from bokeh.core.properties import Instance
+from bokeh.core.properties import Instance, Float
 from bokeh.embed import components
 from bokeh.layouts import column, row
 from bokeh.models import LayoutDOM, Select, Plot, \
     ColumnDataSource, DataTable, \
     TableColumn, Range1d, ColorBar, BasicTicker, \
-    LinearColorMapper, Float, Image
+    LinearColorMapper, DateFormatter, DatetimeTickFormatter
 from bokeh.palettes import RdYlGn11
 from bokeh.plotting import figure
 from bokeh.resources import INLINE
@@ -14,7 +14,7 @@ from inqbus.graphdemo.bokeh_extension.helpers import get_min_value, \
 from inqbus.graphdemo.bokeh_extension.helpers_xy import get_diagram_data, \
     get_plot_data_python
 from inqbus.graphdemo.constants import UPLOAD_PATH, X_MIN_CONTOUR, \
-    X_MAX_CONTOUR, Y_MIN_CONTOUR, Y_MAX_CONTOUR, DISPLAY_STD
+    X_MAX_CONTOUR, Y_MIN_CONTOUR, Y_MAX_CONTOUR, DISPLAY_STD, X_AXIS_DATES
 from inqbus.graphdemo.views.overview import get_files_by_path
 
 
@@ -60,7 +60,20 @@ class XYPlotJSLayout(LayoutDOM):
             index=x
         ))
 
-        self.plot = figure(webgl=constants.WEBGL)
+
+        self.plot = figure(
+            webgl=constants.WEBGL,
+        )
+
+        if X_AXIS_DATES:
+            self.plot.xaxis.formatter=DatetimeTickFormatter(formats=dict(
+                seconds=["%d.%m.%y %H:%M:%S"],
+                minutes=["%d.%m.%y %H:%M:%S"],
+                hourmin=["%d.%m.%y %H:%M:%S"],
+                hours=["%d.%m.%y %Hh"],
+                days=["%d.%m.%y"],
+                months=["%b %y"],
+                years=["%b %y"]))
 
         self.plot.x_range = Range1d(start=0.0, end=10.0)
         self.plot.y_range = Range1d(start=0.0, end=10.0)
@@ -128,10 +141,17 @@ class XYPlotJSLayout(LayoutDOM):
             value=tables[0]
         )
 
+        if 'date' in columns:
+            x_value = 'date'
+        elif 'time' in columns:
+            x_value = 'time'
+        else:
+            x_value = columns[0]
+
         self.x_axis = Select(
             options=columns,
             title="Select a x axis",
-            value=columns[0]
+            value=x_value
         )
 
         if len(columns) >= 2:
@@ -251,6 +271,7 @@ class XYPlotPythonLayout(XYPlotJSLayout):
 
         self.x_axis.options = columns
         self.y_axis.options = columns
+
 
         self.x_axis.value = columns[0]
         if len(columns) >= 2:

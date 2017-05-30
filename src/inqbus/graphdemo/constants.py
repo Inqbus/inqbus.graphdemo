@@ -55,3 +55,6 @@ Y_MIN_CONTOUR = 0.0
 
 # display red lines with standard derivation
 DISPLAY_STD = False
+
+# Format x as dates
+X_AXIS_DATES = True
