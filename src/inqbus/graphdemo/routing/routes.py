@@ -78,6 +78,7 @@ def logged_in_views(app):
         y_max = request.form['y_max'] or None
         x_column = request.form['x_column'] or None
         y_column = request.form['y_column'] or None
+        data_filter = request.form['data_filter'] or None
 
         if table:
             return diagram_plot_data_view(app,
@@ -91,7 +92,8 @@ def logged_in_views(app):
                                           y_min=y_min,
                                           y_max=y_max,
                                           x_column=x_column,
-                                          y_column=y_column)
+                                          y_column=y_column,
+                                          data_filter=data_filter)
 
         return diagram_data_view(app, upload_path, filename)
 

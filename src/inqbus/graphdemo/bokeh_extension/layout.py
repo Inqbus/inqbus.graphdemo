@@ -8,7 +8,7 @@ from bokeh.layouts import column, row
 from bokeh.models import LayoutDOM, Select, Plot, \
     ColumnDataSource, DataTable, \
     TableColumn, Range1d, ColorBar, BasicTicker, \
-    LinearColorMapper, DateFormatter, DatetimeTickFormatter
+    LinearColorMapper, DateFormatter, DatetimeTickFormatter, MultiSelect
 from bokeh.palettes import RdYlGn11
 from bokeh.plotting import figure
 from bokeh.resources import INLINE
@@ -18,7 +18,8 @@ from inqbus.graphdemo.bokeh_extension.helpers import get_min_value, \
 from inqbus.graphdemo.bokeh_extension.helpers_xy import get_diagram_data, \
     get_plot_data_python
 from inqbus.graphdemo.constants import UPLOAD_PATH, X_MIN_CONTOUR, \
-    X_MAX_CONTOUR, Y_MIN_CONTOUR, Y_MAX_CONTOUR, DISPLAY_STD, X_AXIS_DATES
+    X_MAX_CONTOUR, Y_MIN_CONTOUR, Y_MAX_CONTOUR, DISPLAY_STD, X_AXIS_DATES, \
+    USE_DATA_FILTER, OPTIONS_FOR_DATAFILTER, COLUMN_FOR_DATAFILTER
 from inqbus.graphdemo.views.overview import get_files_by_path
 
 
@@ -43,6 +44,8 @@ class XYPlotJSLayout(LayoutDOM):
     source = Instance(ColumnDataSource)
 
     table_plot = Instance(DataTable)
+
+    data_filter = Instance(MultiSelect)
 
     def __init__(self, *args, **kwargs):
         """
@@ -70,7 +73,7 @@ class XYPlotJSLayout(LayoutDOM):
         )
 
         if X_AXIS_DATES:
-           self.plot.xaxis.formatter=DatetimeTickFormatter(formats=dict(
+            self.plot.xaxis.formatter=DatetimeTickFormatter(formats=dict(
                 seconds=["%d.%m.%y %H:%M:%S"],
                 minutes=["%d.%m.%y %H:%M:%S"],
                 hourmin=["%d.%m.%y %H:%M:%S"],
@@ -78,9 +81,22 @@ class XYPlotJSLayout(LayoutDOM):
                 days=["%d.%m.%y"],
                 months=["%b %y"],
                 years=["%b %y"]))
-           self.plot.xaxis.major_label_orientation=math.pi/2
-           self.plot.xaxis.major_label_text_baseline=TextBaseline.top
-           self.plot.xaxis.major_label_text_align=TextAlign.left
+            self.plot.xaxis.major_label_orientation=math.pi/2
+            self.plot.xaxis.major_label_text_baseline=TextBaseline.top
+            self.plot.xaxis.major_label_text_align=TextAlign.left
+
+        if USE_DATA_FILTER:
+            self.data_filter = MultiSelect(
+                options = OPTIONS_FOR_DATAFILTER,
+                value = OPTIONS_FOR_DATAFILTER,
+                title = "Filter on %s" % COLUMN_FOR_DATAFILTER
+            )
+        else:
+            self.data_filter = MultiSelect(
+                options = [],
+                value = [],
+                title = 'Filtering is disabled'
+            )
 
         self.plot.x_range = Range1d(start=0.0, end=10.0)
         self.plot.y_range = Range1d(start=0.0, end=10.0)
@@ -182,6 +198,7 @@ class XYPlotJSLayout(LayoutDOM):
         layout = column(self.table_select,
                         self.x_axis,
                         self.y_axis,
+                        self.data_filter,
                         self,
                         row(self.plot,
                             self.table_plot))

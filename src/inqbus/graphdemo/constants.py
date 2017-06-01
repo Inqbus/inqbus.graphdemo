@@ -58,3 +58,8 @@ DISPLAY_STD = False
 
 # Format x as dates
 X_AXIS_DATES = True
+
+# Datafilter for removing points where a different column has special values
+USE_DATA_FILTER = True
+COLUMN_FOR_DATAFILTER = 'kal_SO2'
+OPTIONS_FOR_DATAFILTER = ['0', '1', '2', '3']

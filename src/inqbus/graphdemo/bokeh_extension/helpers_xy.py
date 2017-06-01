@@ -6,7 +6,7 @@ from inqbus.graphdemo.bokeh_extension.helpers import \
     binary_from_data_map, get_strides_avg_and_std, get_strides_avg, \
     get_max_value, get_min_value
 from inqbus.graphdemo.constants import MAX_NUMBERS_DEFAULT, \
-    REMOVE_DUPLICATES, X_AXIS_DATES
+    REMOVE_DUPLICATES, X_AXIS_DATES, USE_DATA_FILTER, COLUMN_FOR_DATAFILTER
 from tables import open_file
 
 
@@ -61,10 +61,18 @@ def get_column_data(table,
                     y_min=None,
                     y_max=None,
                     x_column=None,
-                    y_column=None):
+                    y_column=None,
+                    data_filter=None):
 
     # get data from hdf5-table-node
     df = pd.DataFrame.from_records(table[:])
+
+    if USE_DATA_FILTER and data_filter and (COLUMN_FOR_DATAFILTER in df):
+        floated_filter = []
+        for number in data_filter.split(','):
+            floated_filter.append(float(number))
+
+        df = df[df[COLUMN_FOR_DATAFILTER].isin(floated_filter)]
 
     # select columns which are selected by th plot
     if x_column and y_column and (x_column in df) and (y_column in df):

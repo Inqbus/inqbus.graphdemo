@@ -244,6 +244,7 @@ export class XYPlotJSLayoutView extends BaseJSView
     @listenTo(@model.plot.x_range, 'change:end', @update_plot_with_ranges)
     @listenTo(@model.plot.y_range, 'change:start', @update_plot_with_ranges)
     @listenTo(@model.plot.y_range, 'change:end', @update_plot_with_ranges)
+    @listenTo(@model.data_filter, 'change', @update_plot_with_ranges)
 
     @read_data(ignore_range=true)
 
@@ -276,14 +277,23 @@ export class XYPlotJSLayoutView extends BaseJSView
     @model.plot.y_range._initial_start = @model.plot.y_range.start
 
 
-  read_data: (ignore_range=true) ->
+  read_data: (ignore_range=true, ignore_y_range=false, ignore_x_range=false) ->
 
     if ignore_range
       x_range_min = null
       x_range_max = null
       y_range_min = null
       y_range_max = null
-
+    else if ignore_y_range
+      x_range_min = @model.plot.x_range.start
+      x_range_max = @model.plot.x_range.end
+      y_range_min = null
+      y_range_max = null
+    else if ignore_x_range
+      x_range_min = null
+      x_range_max = null
+      y_range_min = @model.plot.y_range.start
+      y_range_max = @model.plot.y_range.end
     else
       x_range_min = @model.plot.x_range.start
       x_range_max = @model.plot.x_range.end
@@ -301,6 +311,8 @@ export class XYPlotJSLayoutView extends BaseJSView
         'y_max': y_range_max,
         'x_column': @model.x_axis.value,
         'y_column': @model.y_axis.value,
+        # TODO: checkout why we have to convert the list
+        'data_filter': String(@model.data_filter.value)
     }
 
     return jQuery.ajax
@@ -338,12 +350,17 @@ export class XYPlotJSLayoutView extends BaseJSView
 
 
   update_plot: _.debounce(() ->
-    @read_data(ignore_range=true)
+    @read_data(ignore_range=true, ignore_y_range=true)
     return
   , 300, false)
 
   update_plot_with_ranges: _.debounce(() ->
-    @read_data(ignore_range=false)
+    @read_data(ignore_range=false, ignore_y_range=true)
+    return
+  , 300, false)
+
+  update_plot_with_y_ranges: _.debounce(() ->
+    @read_data(ignore_range=true, ignore_y_range=false)
     return
   , 300, false)
 
@@ -376,4 +393,6 @@ export class XYPlotJSLayout extends LayoutDOM
     source: [p.Any]
 
     table_plot: [p.Any]
+
+    data_filter: [p.Any]
   }
