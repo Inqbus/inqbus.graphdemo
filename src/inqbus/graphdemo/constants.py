@@ -53,7 +53,7 @@ X_MIN_CONTOUR = 0.0
 Y_MAX_CONTOUR = 10.0
 Y_MIN_CONTOUR = 0.0
 
-# display red lines with standard derivation
+# display red lines with standard derivation, only for main line
 DISPLAY_STD = False
 
 # Format x as dates

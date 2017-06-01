@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 import tables as tb
+import numpy as np
 from inqbus.graphdemo.bokeh_extension.helpers import \
     binary_from_data_map, get_strides_avg_and_std, get_strides_avg, \
     get_max_value, get_min_value
@@ -43,14 +44,17 @@ def maxpoints_filter(df, numpoints):
     """
     x = df['x']
     y = df['y']
+    y2 = df['y2']
 
     x_averages = get_strides_avg(numpoints, x)
     y_averages, y_std = get_strides_avg_and_std(numpoints, y)
+    y2_averages = get_strides_avg(numpoints, y2)
 
     return pd.DataFrame({'x': x_averages,
                          'y': y_averages,
                          'y_error_above': y_averages + y_std,
-                         'y_error_below': y_averages - y_std})
+                         'y_error_below': y_averages - y_std,
+                         'y2': y2_averages})
 
 
 def get_column_data(table,
@@ -62,7 +66,8 @@ def get_column_data(table,
                     y_max=None,
                     x_column=None,
                     y_column=None,
-                    data_filter=None):
+                    data_filter=None,
+                    y_column2=None):
 
     # get data from hdf5-table-node
     df = pd.DataFrame.from_records(table[:])
@@ -78,11 +83,17 @@ def get_column_data(table,
     if x_column and y_column and (x_column in df) and (y_column in df):
         df_x = df[x_column]
         df_y = df[y_column]
+        
+        if y_column2 and (y_column2 in df):
+            df_y2 = df[y_column2]
+        else:
+            df_y2 = np.empty((df_y.size))
+            df_y2[:] = np.NAN
 
-        df = pd.DataFrame({'x': df_x, 'y': df_y})
+        df = pd.DataFrame({'x': df_x, 'y': df_y, 'y2': df_y2})
     else:
         # no or wrong columns selected return empty default
-        df = pd.DataFrame({'x': [], 'y': []})
+        df = pd.DataFrame({'x': [], 'y': [], 'y2': []})
         return df
 
     # because bokeh clacluates on ms and unixtimestamp is on seconds
@@ -150,10 +161,12 @@ def get_python_plot_data(data,
                          ymax=None,
                          x='x',
                          y='y',
+                         y2='y2',
                          y_error_above='y_error_above',
                          y_error_below='y_error_below',
                          y_col=None,
-                         x_col=None):
+                         x_col=None,
+                         y2_col=None):
     """
     Gets data as pandas dateframe and returns a dictionary with all
     data needed for drawing the plot
@@ -163,6 +176,8 @@ def get_python_plot_data(data,
     # in dictionary
     x_data = data[x].as_matrix()
     y_data = data[y].as_matrix()
+    y2_data = data[y2].as_matrix()
+
     if y_error_above in data:
         y_above = data[y_error_above].as_matrix()
     else:
@@ -178,6 +193,7 @@ def get_python_plot_data(data,
         'source.data.y': y_data,
         'source.data.y_above': y_above,
         'source.data.y_below': y_below,
+        'source.data.y2': y2_data
     }
 
     # calculate ranges
@@ -204,10 +220,20 @@ def get_python_plot_data(data,
 
     if y_data.size > 0 and (ymax == 'NaN' or ymax is None):
         y_max = get_max_value(y_data, default=y_max)
+        y_max2 = get_max_value(y2_data, default=y_max)
+        if isinstance(y_max, float) and isinstance(y_max2, float) and y_max2 > y_max:
+            y_max = y_max2
+        elif not isinstance(y_max, float) and isinstance(y_max2, float):
+            y_max = y_max2
     elif ymax:
         y_max = float(ymax)
     if y_data.size > 0 and (ymin == 'NaN' or ymin is None):
         y_min = get_min_value(y_data, default=y_min)
+        y_min2 = get_min_value(y2_data, default=y_min)
+        if isinstance(y_min, float) and isinstance(y_min2, float) and y_min2 < y_min:
+            y_min = y_min2
+        elif not isinstance(y_min, float) and isinstance(y_min2, float):
+            y_min = y_min2
     elif ymin:
         y_min = float(ymin)
 
@@ -265,10 +291,11 @@ def get_plot_data_binary(app, upload_path, filename, table_path, **kwargs):
 
     x_col = kwargs['x_column']
     y_col = kwargs['y_column']
+    y2_col = kwargs['y_column2']
 
     # calculate binary plot-data
     binary = get_plot_binary_data(app, data, xmin=xmin, xmax=xmax, ymin=ymin,
-                                  ymax=ymax, x_col=x_col, y_col=y_col)
+                                  ymax=ymax, x_col=x_col, y_col=y_col, y2_col=y2_col)
 
     return binary
 
@@ -317,7 +344,8 @@ def get_plot_binary_data(app,
                          y_error_above='y_error_above',
                          y_error_below='y_error_below',
                          y_col=None,
-                         x_col=None):
+                         x_col=None,
+                         y2_col=None):
 
     data_map = get_python_plot_data(data,
                                     xmin=xmin,
@@ -329,7 +357,8 @@ def get_plot_binary_data(app,
                                     y_error_above=y_error_above,
                                     y_error_below=y_error_below,
                                     y_col=y_col,
-                                    x_col=x_col)
+                                    x_col=x_col,
+                                    y2_col=y2_col)
 
     all_data = binary_from_data_map(data_map)
 

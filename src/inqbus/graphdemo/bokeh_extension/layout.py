@@ -37,6 +37,8 @@ class XYPlotJSLayout(LayoutDOM):
 
     y_axis = Instance(Select)
 
+    y_axis2 = Instance(Select)
+
     plot = Instance(Plot)
 
     data = Instance(ColumnDataSource)
@@ -64,7 +66,8 @@ class XYPlotJSLayout(LayoutDOM):
             y=y,
             y_below=y,
             y_above=y,
-            index=x
+            index=x,
+            y2=y,
         ))
 
 
@@ -108,6 +111,13 @@ class XYPlotJSLayout(LayoutDOM):
             color='blue',
             line_width=2)
 
+        self.plot.line(
+            x='x',
+            y='y2',
+            source=self.source,
+            color='green',
+            line_width=2)
+
         if DISPLAY_STD:
             self.plot.line(
                 x='x',
@@ -132,6 +142,9 @@ class XYPlotJSLayout(LayoutDOM):
                     field='y',
                     title='y average of slided data'),
                 TableColumn(
+                    field='y2',
+                    title='Second Line y2'),
+                TableColumn(
                     field='y_above',
                     title='y + standard derivation'),
                 TableColumn(
@@ -141,6 +154,7 @@ class XYPlotJSLayout(LayoutDOM):
     def get_colums(self, data, table):
         if table in data:
             columns = data[table]
+            columns.append('No Selection')
         else:
             columns = []
         return columns
@@ -190,6 +204,12 @@ class XYPlotJSLayout(LayoutDOM):
                 value=columns[0]
             )
 
+        self.y_axis2 = Select(
+            options=columns,
+            title="Select a second y axis",
+            value='No Selection'
+        )
+
     def get_tables(self, data):
         return list(data.keys())
 
@@ -197,7 +217,7 @@ class XYPlotJSLayout(LayoutDOM):
 
         layout = column(self.table_select,
                         self.x_axis,
-                        self.y_axis,
+                        row(self.y_axis, self.y_axis2),
                         self.data_filter,
                         self,
                         row(self.plot,
