@@ -1,4 +1,8 @@
+import math
+
 from bokeh.core.properties import Instance, Float
+from bokeh.core.enums import TextBaseline, Orientation, TextAlign
+
 from bokeh.embed import components
 from bokeh.layouts import column, row
 from bokeh.models import LayoutDOM, Select, Plot, \
@@ -74,6 +78,9 @@ class XYPlotJSLayout(LayoutDOM):
                 days=["%d.%m.%y"],
                 months=["%b %y"],
                 years=["%b %y"]))
+           self.plot.xaxis.major_label_orientation=math.pi/2
+           self.plot.xaxis.major_label_text_baseline=TextBaseline.top
+           self.plot.xaxis.major_label_text_align=TextAlign.left
 
         self.plot.x_range = Range1d(start=0.0, end=10.0)
         self.plot.y_range = Range1d(start=0.0, end=10.0)
