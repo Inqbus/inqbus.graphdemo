@@ -66,7 +66,7 @@ class XYPlotJSLayout(LayoutDOM):
         )
 
         if X_AXIS_DATES:
-            self.plot.xaxis.formatter=DatetimeTickFormatter(formats=dict(
+           self.plot.xaxis.formatter=DatetimeTickFormatter(formats=dict(
                 seconds=["%d.%m.%y %H:%M:%S"],
                 minutes=["%d.%m.%y %H:%M:%S"],
                 hourmin=["%d.%m.%y %H:%M:%S"],

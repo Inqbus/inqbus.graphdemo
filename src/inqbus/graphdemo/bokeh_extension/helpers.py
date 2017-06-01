@@ -139,7 +139,7 @@ def get_strides_avg(numpoints, col):
     strided, extra = get_strides_and_extra(numpoints, col)
 
     if strided is None or strided.size == 0:
-        averages = col
+        averages = col*1.0
     elif extra.size == 0:
         averages = np.nanmean(strided, axis=1)
     else:
